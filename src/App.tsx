@@ -11,6 +11,7 @@ const AUTH_PASSWORD = import.meta.env.VITE_APP_PASSWORD;
 const AUTH_CONFIGURED = Boolean(AUTH_USER && AUTH_PASSWORD);
 
 export default function App() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [authenticated, setAuthenticated] = useState(() => {
     if (!AUTH_CONFIGURED || typeof window === "undefined") return false;
     return sessionStorage.getItem(AUTH_SESSION_KEY) === "1";
@@ -96,6 +97,14 @@ export default function App() {
     toggle(activeSlug, activeItem.id);
   };
 
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.body.style.overflow = sidebarOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [sidebarOpen]);
+
   const onLogin = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!AUTH_CONFIGURED) {
@@ -164,7 +173,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <aside className="sidebar">
+      <aside className={"sidebar" + (sidebarOpen ? " open" : "")}>
         <header className="sidebar-header">
           <h1>
             English <em>Study</em>
@@ -183,6 +192,7 @@ export default function App() {
                   setActiveSlug(c.slug);
                   selectItem(c.items[0]?.id ?? null);
                   setSearch("");
+                  setSidebarOpen(false);
                 }}
               >
                 <span className="c-title">{c.title}</span>
@@ -212,7 +222,10 @@ export default function App() {
                       (it.audioPath ? "" : " no-audio") +
                       (studied ? " studied" : "")
                     }
-                    onClick={() => selectItem(it.id)}
+                    onClick={() => {
+                      selectItem(it.id);
+                      setSidebarOpen(false);
+                    }}
                     title={it.title}
                   >
                     <span className="item-mark" aria-hidden="true">
@@ -238,6 +251,11 @@ export default function App() {
           </ul>
         </div>
       </aside>
+      <button
+        className={"sidebar-backdrop" + (sidebarOpen ? " open" : "")}
+        onClick={() => setSidebarOpen(false)}
+        aria-label="Fechar lista de conteúdos"
+      />
 
       <main className="viewer">
         {!activeItem && <div className="empty">Selecione um texto.</div>}
@@ -245,6 +263,12 @@ export default function App() {
           <>
             <header className="viewer-header">
               <div>
+                <button
+                  className="mobile-menu-btn"
+                  onClick={() => setSidebarOpen(true)}
+                >
+                  Conteúdos
+                </button>
                 <div className="breadcrumb">{activeCollection?.title}</div>
                 <h2>
                   <span className="item-num">№ {activeItem.id}</span>
@@ -323,6 +347,26 @@ export default function App() {
                 audioSrc={activeItem.audioPath}
               />
             )}
+            <nav className="mobile-bottom-nav">
+              <button onClick={() => go(-1)} disabled={currentIdx <= 0}>
+                Anterior
+              </button>
+              <button
+                className={"study-btn" + (activeStudied ? " done" : "")}
+                onClick={onToggleStudied}
+              >
+                {activeStudied ? "Estudado" : "Marcar"}
+              </button>
+              <button
+                onClick={() => go(1)}
+                disabled={
+                  !activeCollection ||
+                  currentIdx >= activeCollection.items.length - 1
+                }
+              >
+                Próximo
+              </button>
+            </nav>
           </>
         )}
       </main>
