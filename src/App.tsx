@@ -25,6 +25,7 @@ export default function App() {
   const [itemMd, setItemMd] = useState<ParsedMd | null>(null);
   const [loadingItem, setLoadingItem] = useState(false);
   const [search, setSearch] = useState("");
+  const [liveMessage, setLiveMessage] = useState("");
   const { isStudied, toggle, countFor } = useStudied();
 
   useEffect(() => {
@@ -94,7 +95,13 @@ export default function App() {
 
   const onToggleStudied = () => {
     if (!activeSlug || !activeItem) return;
+    const nextStudied = !activeStudied;
     toggle(activeSlug, activeItem.id);
+    setLiveMessage(
+      nextStudied
+        ? "Conteúdo marcado como estudado."
+        : "Conteúdo desmarcado como estudado.",
+    );
   };
 
   useEffect(() => {
@@ -104,6 +111,12 @@ export default function App() {
       document.body.style.overflow = "";
     };
   }, [sidebarOpen]);
+
+  useEffect(() => {
+    if (!liveMessage) return;
+    const timeout = window.setTimeout(() => setLiveMessage(""), 2500);
+    return () => window.clearTimeout(timeout);
+  }, [liveMessage]);
 
   const onLogin = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -173,7 +186,10 @@ export default function App() {
 
   return (
     <div className="app">
-      <aside className={"sidebar" + (sidebarOpen ? " open" : "")}>
+      <aside
+        id="content-sidebar"
+        className={"sidebar" + (sidebarOpen ? " open" : "")}
+      >
         <header className="sidebar-header">
           <h1>
             English <em>Study</em>
@@ -204,7 +220,11 @@ export default function App() {
           })}
         </nav>
         <div className="items-panel">
+          <label htmlFor="item-search" className="sr-only">
+            Buscar conteúdo
+          </label>
           <input
+            id="item-search"
             className="search"
             placeholder="Buscar…"
             value={search}
@@ -266,6 +286,8 @@ export default function App() {
                 <button
                   className="mobile-menu-btn"
                   onClick={() => setSidebarOpen(true)}
+                  aria-expanded={sidebarOpen}
+                  aria-controls="content-sidebar"
                 >
                   Conteúdos
                 </button>
@@ -347,6 +369,9 @@ export default function App() {
                 audioSrc={activeItem.audioPath}
               />
             )}
+            <p className="sr-only" role="status" aria-live="polite">
+              {liveMessage}
+            </p>
             <nav className="mobile-bottom-nav">
               <button onClick={() => go(-1)} disabled={currentIdx <= 0}>
                 Anterior

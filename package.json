@@ -12,17 +12,27 @@
     "build": "tsc -b && vite build",
     "build:clean": "bun run clean && bun run build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:a11y": "playwright test tests/e2e/accessibility.spec.ts",
+    "test:e2e:visual": "playwright test tests/e2e/visual-regression.spec.ts",
+    "test:e2e:visual:update": "playwright test tests/e2e/visual-regression.spec.ts --update-snapshots",
+    "qa:ux": "E2E_APP_USER=${E2E_APP_USER:-${VITE_APP_USER:-qa-user}} E2E_APP_PASSWORD=${E2E_APP_PASSWORD:-${VITE_APP_PASSWORD:-qa-password}} playwright test tests/e2e/ux-checklist.spec.ts --project=chromium"
   },
   "dependencies": {
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.0",
     "@eslint/js": "^9.39.4",
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@playwright/test": "^1.57.0",
     "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^7.1.1",

@@ -70,6 +70,13 @@ Na raiz do projeto:
 - `bun run build`: gera build de producao.
 - `bun run preview`: serve a build localmente.
 - `bun run lint`: roda o ESLint.
+- `bun run test:e2e`: roda testes E2E de QA com Playwright.
+- `bun run test:e2e:ui`: abre o runner interativo do Playwright.
+- `bun run test:e2e:a11y`: executa auditoria de acessibilidade com axe.
+- `bun run test:e2e:visual`: valida regressão visual por screenshot.
+- `bun run test:e2e:visual:update`: atualiza baseline dos screenshots.
+- `bun run qa:ux`: gera checklist UX automatizado com prioridades.
+- `bun run test:e2e:report`: abre o relatório HTML do Playwright.
 
 ## UX mobile (resumo)
 
@@ -129,3 +136,22 @@ O projeto pode carregar skills locais via `.pi/skills/`. Atualmente, o foco esta
 - `ui-ux-pro-max`
 
 Se alterar esse conjunto, prefira manter apenas as skills necessarias ao projeto para evitar sobreposicao de instrucoes.
+
+## QA de UI/UX com Playwright
+
+Foi adicionada uma base de QA E2E em `tests/e2e` com configuracao em `playwright.config.ts`.
+
+Guia rapido:
+
+```bash
+bun install
+bunx playwright install
+bun run test:e2e
+bun run test:e2e:a11y
+bun run test:e2e:visual:update
+bun run test:e2e:visual
+bun run qa:ux
+bun run test:e2e:report
+```
+
+Mais detalhes e backlog de melhorias em `docs/qa-ui-ux.md`.
