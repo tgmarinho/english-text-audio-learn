@@ -6,6 +6,7 @@ Aplicacao web para estudo de ingles com textos, traducao e audio.
 
 O projeto organiza colecoes de conteudo em markdown e mp3 e gera um catalogo consumido pelo frontend React.
 Ao iniciar em desenvolvimento ou gerar build, o catalogo e atualizado automaticamente.
+Na versao mobile, a navegacao foi otimizada com drawer de conteudos e barra fixa inferior para navegacao rapida entre licoes.
 
 ## Estrutura do projeto
 
@@ -15,6 +16,7 @@ Ao iniciar em desenvolvimento ou gerar build, o catalogo e atualizado automatica
 - `public/catalog.json`: catalogo gerado automaticamente com as colecoes e itens.
 - `scripts/build-catalog.ts`: script que gera o catalogo a partir de `public/collections`.
 - `index.html`: entrada principal da aplicacao na raiz.
+- `.pi/skills/`: skills locais do Pi para UX/UI e design.
 
 ## Requisitos
 
@@ -69,6 +71,20 @@ Na raiz do projeto:
 - `bun run preview`: serve a build localmente.
 - `bun run lint`: roda o ESLint.
 
+## UX mobile (resumo)
+
+A interface mobile prioriza leitura e navegacao com o polegar:
+
+- Sidebar em drawer (abre pelo botao `Conteudos` no topo).
+- Fechamento automatico do drawer ao selecionar colecao/item.
+- Barra inferior sticky com `Anterior`, `Marcar/Estudado` e `Proximo`.
+- Estados de foco e alvo de toque ajustados para telas menores.
+
+Arquivos principais desse comportamento:
+
+- `src/App.tsx`
+- `src/App.css`
+
 ## Fluxo de dados
 
 1. O script `scripts/build-catalog.ts` varre `public/collections`.
@@ -99,3 +115,17 @@ public/collections/minha-colecao/
     texto-001.mp3
     texto-002.mp3
 ```
+
+## Skills locais (Pi)
+
+O projeto pode carregar skills locais via `.pi/skills/`. Atualmente, o foco esta em UI/UX e design:
+
+- `banner-design`
+- `brand`
+- `design`
+- `design-system`
+- `slides`
+- `ui-styling`
+- `ui-ux-pro-max`
+
+Se alterar esse conjunto, prefira manter apenas as skills necessarias ao projeto para evitar sobreposicao de instrucoes.
