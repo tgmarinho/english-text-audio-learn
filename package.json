@@ -7,8 +7,10 @@
     "catalog": "bun scripts/build-catalog.ts",
     "predev": "bun scripts/build-catalog.ts",
     "prebuild": "bun scripts/build-catalog.ts",
+    "clean": "rm -rf dist",
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:clean": "bun run clean && bun run build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
