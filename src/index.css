@@ -1,0 +1,153 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap");
+
+:root {
+  color-scheme: dark;
+
+  --bg-deep: #05060b;
+  --bg-base: #0a0b12;
+  --bg-elevated: #12131c;
+  --surface: rgba(255, 255, 255, 0.035);
+  --surface-hover: rgba(255, 255, 255, 0.065);
+  --surface-active: rgba(173, 141, 99, 0.14);
+
+  --foreground: #f1ece0;
+  --foreground-soft: #c9c4b8;
+  --foreground-muted: #8a8479;
+  --foreground-dim: #5a564d;
+
+  --accent: #c9a86a;
+  --accent-strong: #a8894d;
+  --accent-glow: rgba(201, 168, 106, 0.18);
+
+  --highlight: #f6b03b;
+  --highlight-soft: rgba(246, 176, 59, 0.18);
+  --highlight-text: #1a120a;
+
+  --border: rgba(241, 236, 224, 0.07);
+  --border-strong: rgba(241, 236, 224, 0.14);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --easing: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 160ms;
+  --dur-mid: 240ms;
+
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-ui: "Geist", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, Menlo, monospace;
+
+  font-family: var(--font-ui);
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  color: var(--foreground);
+  background: var(--bg-deep);
+  background-image:
+    radial-gradient(
+      ellipse at 12% 8%,
+      rgba(201, 168, 106, 0.10) 0%,
+      transparent 40%
+    ),
+    radial-gradient(
+      ellipse at 88% 92%,
+      rgba(92, 71, 54, 0.12) 0%,
+      transparent 45%
+    ),
+    radial-gradient(
+      ellipse at 50% 50%,
+      rgba(30, 25, 20, 0.45) 0%,
+      transparent 60%
+    );
+  background-attachment: fixed;
+  min-height: 100vh;
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.22;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.8 0 0 0 0 0.8 0 0 0 0 0.8 0 0 0 0.35 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(
+      to right,
+      rgba(241, 236, 224, 0.025) 1px,
+      transparent 1px
+    );
+  background-size: 72px 100%;
+  mask-image: linear-gradient(to bottom, black, transparent 70%);
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(241, 236, 224, 0.08);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: background 160ms var(--easing);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(241, 236, 224, 0.2);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+
+::selection {
+  background: var(--accent-glow);
+  color: var(--foreground);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
