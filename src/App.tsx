@@ -11,7 +11,10 @@ const AUTH_PASSWORD = import.meta.env.VITE_APP_PASSWORD;
 const AUTH_CONFIGURED = Boolean(AUTH_USER && AUTH_PASSWORD);
 
 export default function App() {
-  const [authenticated, setAuthenticated] = useState(false);
+  const [authenticated, setAuthenticated] = useState(() => {
+    if (!AUTH_CONFIGURED || typeof window === "undefined") return false;
+    return sessionStorage.getItem(AUTH_SESSION_KEY) === "1";
+  });
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
@@ -24,12 +27,6 @@ export default function App() {
   const { isStudied, toggle, countFor } = useStudied();
 
   useEffect(() => {
-    if (!AUTH_CONFIGURED) return;
-    const isAuthenticated = sessionStorage.getItem(AUTH_SESSION_KEY) === "1";
-    setAuthenticated(isAuthenticated);
-  }, []);
-
-  useEffect(() => {
     if (!authenticated) return;
     fetch("/catalog.json")
       .then((r) => r.json())
@@ -38,7 +35,11 @@ export default function App() {
         const first = c.collections[0];
         if (first) {
           setActiveSlug(first.slug);
-          if (first.items[0]) setActiveItemId(first.items[0].id);
+          if (first.items[0]) {
+            setItemMd(null);
+            setLoadingItem(true);
+            setActiveItemId(first.items[0].id);
+          }
         }
       });
   }, [authenticated]);
@@ -55,8 +56,6 @@ export default function App() {
 
   useEffect(() => {
     if (!activeItem) return;
-    setLoadingItem(true);
-    setItemMd(null);
     fetch(activeItem.mdPath)
       .then((r) => r.text())
       .then((t) => setItemMd(parseMd(t)))
@@ -77,10 +76,16 @@ export default function App() {
       ? activeCollection.items.findIndex((i) => i.id === activeItem.id)
       : -1;
 
+  const selectItem = (id: string | null) => {
+    setActiveItemId(id);
+    setItemMd(null);
+    setLoadingItem(Boolean(id));
+  };
+
   const go = (delta: number) => {
     if (!activeCollection || currentIdx < 0) return;
     const next = activeCollection.items[currentIdx + delta];
-    if (next) setActiveItemId(next.id);
+    if (next) selectItem(next.id);
   };
 
   const activeStudied =
@@ -176,7 +181,7 @@ export default function App() {
                 }
                 onClick={() => {
                   setActiveSlug(c.slug);
-                  setActiveItemId(c.items[0]?.id ?? null);
+                  selectItem(c.items[0]?.id ?? null);
                   setSearch("");
                 }}
               >
@@ -207,7 +212,7 @@ export default function App() {
                       (it.audioPath ? "" : " no-audio") +
                       (studied ? " studied" : "")
                     }
-                    onClick={() => setActiveItemId(it.id)}
+                    onClick={() => selectItem(it.id)}
                     title={it.title}
                   >
                     <span className="item-mark" aria-hidden="true">
