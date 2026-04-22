@@ -12,6 +12,9 @@ const AUTH_CONFIGURED = Boolean(AUTH_USER && AUTH_PASSWORD);
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarStep, setSidebarStep] = useState<"collections" | "items">(
+    "collections",
+  );
   const [authenticated, setAuthenticated] = useState(() => {
     if (!AUTH_CONFIGURED || typeof window === "undefined") return false;
     return sessionStorage.getItem(AUTH_SESSION_KEY) === "1";
@@ -118,6 +121,21 @@ export default function App() {
     return () => window.clearTimeout(timeout);
   }, [liveMessage]);
 
+  useEffect(() => {
+    if (!sidebarOpen || typeof window === "undefined") return;
+    const scrollActive = () => {
+      document
+        .querySelector<HTMLButtonElement>(".collection-btn.active")
+        ?.scrollIntoView({ block: "nearest" });
+      document
+        .querySelector<HTMLButtonElement>(".item-btn.active")
+        ?.scrollIntoView({ block: "nearest" });
+    };
+
+    const frame = window.requestAnimationFrame(scrollActive);
+    return () => window.cancelAnimationFrame(frame);
+  }, [sidebarOpen, activeSlug, activeItemId]);
+
   const onLogin = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!AUTH_CONFIGURED) {
@@ -188,7 +206,11 @@ export default function App() {
     <div className="app">
       <aside
         id="content-sidebar"
-        className={"sidebar" + (sidebarOpen ? " open" : "")}
+        className={
+          "sidebar" +
+          (sidebarOpen ? " open" : "") +
+          (sidebarStep === "items" ? " step-items" : " step-collections")
+        }
       >
         <header className="sidebar-header">
           <h1>
@@ -208,8 +230,9 @@ export default function App() {
                   setActiveSlug(c.slug);
                   selectItem(c.items[0]?.id ?? null);
                   setSearch("");
-                  setSidebarOpen(false);
+                  setSidebarStep("items");
                 }}
+                aria-current={c.slug === activeSlug ? "true" : undefined}
               >
                 <span className="c-title">{c.title}</span>
                 <span className="c-count" title={`${done} estudados de ${c.count}`}>
@@ -220,6 +243,22 @@ export default function App() {
           })}
         </nav>
         <div className="items-panel">
+          <div className="mobile-items-header">
+            <button
+              type="button"
+              className="mobile-back-btn"
+              onClick={() => setSidebarStep("collections")}
+            >
+              ← Categorias
+            </button>
+            <button
+              type="button"
+              className="mobile-close-btn"
+              onClick={() => setSidebarOpen(false)}
+            >
+              Fechar
+            </button>
+          </div>
           <label htmlFor="item-search" className="sr-only">
             Buscar conteúdo
           </label>
@@ -247,6 +286,7 @@ export default function App() {
                       setSidebarOpen(false);
                     }}
                     title={it.title}
+                    aria-current={it.id === activeItemId ? "true" : undefined}
                   >
                     <span className="item-mark" aria-hidden="true">
                       {studied ? (
@@ -285,7 +325,10 @@ export default function App() {
               <div>
                 <button
                   className="mobile-menu-btn"
-                  onClick={() => setSidebarOpen(true)}
+                  onClick={() => {
+                    setSidebarStep("collections");
+                    setSidebarOpen(true);
+                  }}
                   aria-expanded={sidebarOpen}
                   aria-controls="content-sidebar"
                 >

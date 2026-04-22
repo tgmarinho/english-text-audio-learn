@@ -12,18 +12,63 @@ type Highlight = {
   totalWords: number;
 };
 
+type PlayerSettings = {
+  autoScroll: boolean;
+  rate: number;
+  highlightWords: boolean;
+};
+
+const SETTINGS_KEY = "english-study-player-settings";
+const RATE_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const;
+
 function buildHighlight(text: string): Highlight {
   const tokens = tokenize(text);
   return { tokens, totalWords: countWords(tokens) };
 }
 
+function loadSettings(): PlayerSettings {
+  if (typeof window === "undefined") {
+    return { autoScroll: true, rate: 1, highlightWords: true };
+  }
+
+  const fallback: PlayerSettings = {
+    autoScroll: true,
+    rate: 1,
+    highlightWords: true,
+  };
+
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw) as Partial<PlayerSettings>;
+    return {
+      autoScroll:
+        typeof parsed.autoScroll === "boolean"
+          ? parsed.autoScroll
+          : fallback.autoScroll,
+      rate:
+        typeof parsed.rate === "number" &&
+        RATE_OPTIONS.some((option) => option === parsed.rate)
+          ? parsed.rate
+          : fallback.rate,
+      highlightWords:
+        typeof parsed.highlightWords === "boolean"
+          ? parsed.highlightWords
+          : fallback.highlightWords,
+    };
+  } catch {
+    return fallback;
+  }
+}
+
 export function Player({ englishText, portugueseText, audioSrc }: Props) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const settingsRef = useRef<HTMLDivElement | null>(null);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [rate, setRate] = useState(1);
-  const [autoScroll, setAutoScroll] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settings, setSettings] = useState<PlayerSettings>(() => loadSettings());
 
   const en = useMemo(() => buildHighlight(englishText), [englishText]);
 
@@ -58,19 +103,47 @@ export function Player({ englishText, portugueseText, audioSrc }: Props) {
   }, [audioSrc]);
 
   useEffect(() => {
-    if (audioRef.current) audioRef.current.playbackRate = rate;
-  }, [rate]);
+    if (audioRef.current) audioRef.current.playbackRate = settings.rate;
+  }, [settings.rate]);
 
   useEffect(() => {
-    if (!autoScroll || activeIndex < 0) return;
+    if (!settings.autoScroll || activeIndex < 0) return;
     const el = document.querySelector(
       `[data-word-index="${activeIndex}"]`,
     ) as HTMLElement | null;
     if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [activeIndex, autoScroll]);
+  }, [activeIndex, settings.autoScroll]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  }, [settings]);
+
+  useEffect(() => {
+    if (!settingsOpen) return;
+
+    const onPointerDown = (event: PointerEvent) => {
+      if (!settingsRef.current) return;
+      const target = event.target as Node;
+      if (!settingsRef.current.contains(target)) {
+        setSettingsOpen(false);
+      }
+    };
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSettingsOpen(false);
+    };
+
+    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [settingsOpen]);
 
   return (
-    <div className="player">
+    <div className={"player" + (settings.highlightWords ? "" : " no-highlight")}>      
       {audioSrc ? (
         <div className="player-controls">
           <audio
@@ -79,37 +152,84 @@ export function Player({ englishText, portugueseText, audioSrc }: Props) {
             controls
             preload="metadata"
           />
-          <label className="rate">
-            Velocidade:
-            <select
-              value={rate}
-              onChange={(e) => setRate(Number(e.target.value))}
-            >
-              {[0.5, 0.75, 1, 1.25, 1.5, 2].map((r) => (
-                <option key={r} value={r}>
-                  {r}x
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="autoscroll">
-            <input
-              type="checkbox"
-              checked={autoScroll}
-              onChange={(e) => setAutoScroll(e.target.checked)}
-            />
-            Auto-scroll
-          </label>
         </div>
       ) : (
         <div className="no-audio">Sem áudio disponível.</div>
       )}
 
+      <div className="settings-floating" ref={settingsRef}>
+        <button
+          type="button"
+          className={"settings-fab" + (settingsOpen ? " open" : "")}
+          onClick={() => setSettingsOpen((prev) => !prev)}
+          aria-expanded={settingsOpen}
+          aria-controls="reader-settings-panel"
+          aria-label="Abrir configurações de leitura"
+          title="Configurações de leitura"
+        >
+          ⚙️
+        </button>
+
+        <div
+          id="reader-settings-panel"
+          className={"settings-panel" + (settingsOpen ? " open" : "")}
+        >
+          <h4>Leitura</h4>
+          <label className="settings-row">
+            <span>Auto-scroll</span>
+            <input
+              type="checkbox"
+              checked={settings.autoScroll}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  autoScroll: e.target.checked,
+                }))
+              }
+            />
+          </label>
+          <label className="settings-row">
+            <span>Velocidade padrão</span>
+            <select
+              value={settings.rate}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  rate: Number(e.target.value),
+                }))
+              }
+            >
+              {RATE_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option}x
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="settings-row">
+            <span>Destacar palavras</span>
+            <input
+              type="checkbox"
+              checked={settings.highlightWords}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  highlightWords: e.target.checked,
+                }))
+              }
+            />
+          </label>
+        </div>
+      </div>
+
       <div className="bilingual">
         <section className="column">
           <h3>English</h3>
           <div className="text">
-            {renderParagraphs(englishText, activeIndex)}
+            {renderParagraphs(
+              englishText,
+              settings.highlightWords ? activeIndex : -1,
+            )}
           </div>
         </section>
         <section className="column">
