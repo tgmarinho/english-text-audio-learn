@@ -1,120 +1,111 @@
 # English Study
 
-Aplicacao web para estudo de ingles com textos, traducao e audio.
+A web app to study English with paired texts, translations, and audio.
 
-## Visao geral
+**Live demo:** https://english-master-omega.vercel.app (gated by a simple login)
 
-O projeto organiza colecoes de conteudo em markdown e mp3 e gera um catalogo consumido pelo frontend React.
-Ao iniciar em desenvolvimento ou gerar build, o catalogo e atualizado automaticamente.
-Na versao mobile, a navegacao foi otimizada com drawer de conteudos e barra fixa inferior para navegacao rapida entre licoes.
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
+![Bun](https://img.shields.io/badge/Bun-runtime-000000?logo=bun&logoColor=white)
 
-## Estrutura do projeto
+## Overview
 
-- `src/`: codigo da aplicacao React + TypeScript.
-- `public/collections/`: colecoes de conteudo (cada colecao com `textos/` e `audio/`).
-- `public/category/`: categorias acessiveis pelo frontend.
-- `public/catalog.json`: catalogo gerado automaticamente com as colecoes e itens.
-- `scripts/build-catalog.ts`: script que gera o catalogo a partir de `public/collections`.
-- `index.html`: entrada principal da aplicacao na raiz.
-- `.pi/skills/`: skills locais do Pi para UX/UI e design.
+The content is organized as collections of markdown and mp3 files. A build script reads those collections and generates a catalog that the React frontend consumes. The catalog refreshes automatically when you start the dev server and when you run a build.
 
-## Requisitos
+On mobile, navigation uses a content drawer and a fixed bottom bar so you can move between lessons quickly.
 
-- [Bun](https://bun.sh/) instalado.
+## Project structure
 
-## Controle de acesso (usuario/senha)
+- `src/`: the React and TypeScript app code.
+- `public/collections/`: content collections (each collection has a `textos/` folder and an `audio/` folder).
+- `public/catalog.json`: the catalog generated from the collections.
+- `scripts/build-catalog.ts`: the script that builds the catalog from `public/collections`.
+- `index.html`: the app entry point at the project root.
+- `.pi/skills/`: local Pi skills for UX, UI, and design.
 
-O app possui uma tela de login simples no frontend. O acesso so e liberado quando o usuario e a senha batem com as variaveis de ambiente.
+## Access control
 
-1. Crie seu arquivo de ambiente local:
+The app has a simple login screen in the frontend. Access opens only when the username and password match the environment variables.
+
+1. Create your local environment file:
 
 ```bash
 cp .env.example .env
 ```
 
-2. Defina os valores:
+2. Set the values:
 
 ```env
-VITE_APP_USER=seu-usuario
-VITE_APP_PASSWORD=sua-senha-forte
+VITE_APP_USER=your-username
+VITE_APP_PASSWORD=your-strong-password
 ```
 
-3. Reinicie o servidor (`bun run dev`) para carregar as variaveis.
-
-Observacao importante: como essa validacao roda no frontend, ela ajuda a restringir acesso basico, mas nao substitui autenticacao segura no backend.
-
-## Como rodar localmente
-
-1. Instale dependencias:
-
-```bash
-bun install
-```
-
-2. Rode em desenvolvimento:
+3. Restart the dev server so the new values load:
 
 ```bash
 bun run dev
 ```
 
-O script `predev` gera o catalogo automaticamente antes de subir o Vite.
+This check runs in the frontend. It helps restrict basic access, but it does not replace secure authentication on a backend.
 
-A aplicacao fica disponivel em `http://localhost:5173`.
+## Run locally
 
-## Scripts uteis
+1. Install dependencies:
 
-Na raiz do projeto:
+```bash
+bun install
+```
 
-- `bun run catalog`: gera/atualiza `public/catalog.json`.
-- `bun run dev`: inicia ambiente de desenvolvimento.
-- `bun run build`: gera build de producao.
-- `bun run preview`: serve a build localmente.
-- `bun run lint`: roda o ESLint.
-- `bun run test:e2e`: roda testes E2E de QA com Playwright.
-- `bun run test:e2e:ui`: abre o runner interativo do Playwright.
-- `bun run test:e2e:a11y`: executa auditoria de acessibilidade com axe.
-- `bun run test:e2e:visual`: valida regressão visual por screenshot.
-- `bun run test:e2e:visual:update`: atualiza baseline dos screenshots.
-- `bun run qa:ux`: gera checklist UX automatizado com prioridades.
-- `bun run test:e2e:report`: abre o relatório HTML do Playwright.
+2. Start the dev server:
 
-## UX mobile (resumo)
+```bash
+bun run dev
+```
 
-A interface mobile prioriza leitura e navegacao com o polegar:
+The `predev` script builds the catalog before Vite starts. The app runs at `http://localhost:5173`.
 
-- Sidebar em drawer (abre pelo botao `Conteudos` no topo).
-- Fechamento automatico do drawer ao selecionar colecao/item.
-- Barra inferior sticky com `Anterior`, `Marcar/Estudado` e `Proximo`.
-- Estados de foco e alvo de toque ajustados para telas menores.
+3. Build for production:
 
-Arquivos principais desse comportamento:
+```bash
+bun run build
+```
 
-- `src/App.tsx`
-- `src/App.css`
+The `prebuild` script builds the catalog before the production build runs.
 
-## Fluxo de dados
+## Useful scripts
 
-1. O script `scripts/build-catalog.ts` varre `public/collections`.
-2. Para cada item, extrai titulo do markdown e verifica existencia de audio.
-3. O script grava `public/catalog.json`.
-4. O frontend carrega `/catalog.json` e usa os paths de `/collections/...` para abrir texto e audio.
+Run these from the project root:
 
-## Formato esperado das colecoes
+- `bun run catalog`: build or refresh `public/catalog.json`.
+- `bun run dev`: start the dev server.
+- `bun run build`: create a production build.
+- `bun run preview`: serve the production build locally.
+- `bun run lint`: run ESLint.
 
-Cada pasta dentro de `public/collections/<slug>/` deve conter:
+## Data flow
 
-- `textos/`: arquivos `.md` (um por item).
-- `audio/`: arquivos `.mp3` nomeados como `texto-<id>.mp3`.
+1. `scripts/build-catalog.ts` scans `public/collections`.
+2. For each item, it reads the title from the markdown and checks if the audio exists.
+3. The script writes `public/catalog.json`.
+4. The frontend loads `/catalog.json` and uses the `/collections/...` paths to open the text and the audio.
 
-Os caminhos sao expostos no frontend como:
+## Collection format
 
-- Markdown: `/collections/<slug>/textos/<arquivo>.md`
+Each folder inside `public/collections/<slug>/` should contain:
+
+- `textos/`: `.md` files, one per item.
+- `audio/`: `.mp3` files named `texto-<id>.mp3`.
+
+The frontend exposes the paths as:
+
+- Markdown: `/collections/<slug>/textos/<file>.md`
 - Audio: `/collections/<slug>/audio/texto-<id>.mp3`
 
-## Exemplo de colecao
+### Example collection
 
 ```text
-public/collections/minha-colecao/
+public/collections/my-collection/
   textos/
     001.md
     002.md
@@ -122,36 +113,3 @@ public/collections/minha-colecao/
     texto-001.mp3
     texto-002.mp3
 ```
-
-## Skills locais (Pi)
-
-O projeto pode carregar skills locais via `.pi/skills/`. Atualmente, o foco esta em UI/UX e design:
-
-- `banner-design`
-- `brand`
-- `design`
-- `design-system`
-- `slides`
-- `ui-styling`
-- `ui-ux-pro-max`
-
-Se alterar esse conjunto, prefira manter apenas as skills necessarias ao projeto para evitar sobreposicao de instrucoes.
-
-## QA de UI/UX com Playwright
-
-Foi adicionada uma base de QA E2E em `tests/e2e` com configuracao em `playwright.config.ts`.
-
-Guia rapido:
-
-```bash
-bun install
-bunx playwright install
-bun run test:e2e
-bun run test:e2e:a11y
-bun run test:e2e:visual:update
-bun run test:e2e:visual
-bun run qa:ux
-bun run test:e2e:report
-```
-
-Mais detalhes e backlog de melhorias em `docs/qa-ui-ux.md`.
